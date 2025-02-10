@@ -2,13 +2,9 @@ package com.SalesSavvy.controllers;
 import java.time.Duration;
 import java.util.Map;
 
-import javax.crypto.SecretKey;
-
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -18,23 +14,16 @@ import org.springframework.web.bind.annotation.RestController;
 import com.SalesSavvy.dtos.LoginDTO;
 import com.SalesSavvy.entities.User;
 import com.SalesSavvy.services.AuthService;
-import com.SalesSavvy.services.TokenGenarationService;
-
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.security.Keys;
+import com.SalesSavvy.services.TokenGenerationService;
 
 @RestController
 @RequestMapping("/api")
 public class AuthController {
 	private AuthService authService;
-	private TokenGenarationService tokenGenService;
+	private TokenGenerationService tokenGenService;
 	
-	@Value("${jwt.secret}")
-	private String tokenString;
 	
-	public AuthController(AuthService authService, TokenGenarationService tokenGenService) {
+	public AuthController(AuthService authService, TokenGenerationService tokenGenService) {
 		super();
 		this.authService = authService;
 		this.tokenGenService = tokenGenService;
@@ -78,40 +67,6 @@ public class AuthController {
 				.headers(headers)
 				.body(Map.of("role", user.getRole().getValue(), "message","Login Successful"));
 		
-	}
-	
-	@PostMapping("/validate")
-	@CrossOrigin(origins="http://localhost:5173", allowCredentials = "true")
-	String validate (@CookieValue(name="authtoken" , required = false) String token) {
-		System.out.println("HELLO");
-		System.out.println(token);
-		try {
-			SecretKey key = Keys.hmacShaKeyFor(tokenString.getBytes());
-
-			Claims claims = Jwts.parserBuilder()
-					.setSigningKey(key)
-					.build()
-					.parseClaimsJws(token)
-					.getBody();
-			String subject = claims.getSubject();
-			String role = claims.get("role", String.class);
-			java.util.Date expDate = claims.getExpiration();
-			
-			System.out.println(subject);
-			System.out.println(role);
-			System.out.println(expDate);
-			return "valid Token";
-		} catch (io.jsonwebtoken.security.SignatureException e) {
-			System.out.println("Invalid Token: "+ e);
-			return "Invalid Token";
-		} catch(ExpiredJwtException e) {
-			System.out.println("Expired Token: "+ e);
-			return "TOken Expired";
-		}catch (Exception e) {
-			System.out.println(e);
-			return e.getMessage();
-		}
-
 	}
 	
 }

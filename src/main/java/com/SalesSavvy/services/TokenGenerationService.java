@@ -17,7 +17,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 
 @Service
-public class TokenGenarationService {
+public class TokenGenerationService {
 	
 	@Value("${jwt.secret}")
 	private String tokenGenrationKey;
@@ -27,7 +27,7 @@ public class TokenGenarationService {
 	private TokenRepository tokenRepo;
 	
 	
-	public TokenGenarationService(TokenRepository tokenRepo) {
+	public TokenGenerationService(TokenRepository tokenRepo) {
 		super();
 		this.tokenRepo = tokenRepo;
 	}
