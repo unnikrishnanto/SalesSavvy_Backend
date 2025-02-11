@@ -126,10 +126,9 @@ public class AuthenticationFilter implements Filter{
 	}
 
 	private void setErrorResponse(HttpServletResponse response, int status, String message ) {
-		response.setStatus(status);
-		
 		// The response must contain CORS headers to prevent rejection from browser
-		setCORSHeaders(response);
+				setCORSHeaders(response);
+		response.setStatus(status);
 		try {
 			response.getWriter().write(message);
 		} catch (IOException e) {
