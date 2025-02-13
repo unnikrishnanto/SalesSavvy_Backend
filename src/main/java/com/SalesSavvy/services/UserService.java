@@ -1,8 +1,11 @@
 package com.SalesSavvy.services;
 
+import java.util.Optional;
+
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.SalesSavvy.dtos.UserDTO;
 import com.SalesSavvy.entities.User;
 import com.SalesSavvy.repositories.UserRepository;
 
@@ -48,6 +51,14 @@ public class UserService {
 		System.out.println("saved:" + savedUser.getCreatedAt());
 		System.out.println("saved:" + savedUser.getUpdatedAt());
 		return savedUser;
+	}
+	
+	public UserDTO getDetails(String username) {
+		Optional<User> userOp = userRepo.findByUsername(username);
+		if(userOp.isPresent()) {
+			return new UserDTO(userOp.get());
+		}
+		return null;
 	}
 	
 	
