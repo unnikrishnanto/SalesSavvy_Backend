@@ -5,7 +5,9 @@ import java.util.Map;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestAttribute;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -29,5 +31,22 @@ public class CartItemController {
 			return ResponseEntity.ok(Map.of("Messsage","Success", "count", count));
 		}
 		return ResponseEntity.internalServerError().body(Map.of("Messsage","Something went bad"));
+	}
+	
+	@CrossOrigin(origins ="http://localhost:5173", allowCredentials = "true")
+	@PostMapping("/add")
+	ResponseEntity<?> getCartItem(@RequestBody Map<String, String> body){
+		try {
+			String username = body.get("username");
+			int productId = Integer.parseInt(body.get("productId"));
+
+			if(cartService.getCartItemByUserAndProdId(username, productId)) {
+				return ResponseEntity.ok(Map.of("message", "Success"));
+			}
+			return ResponseEntity.ok(Map.of("message", "Falied"));
+		} catch(Exception e) {
+			return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+		}
+		
 	}
 }
