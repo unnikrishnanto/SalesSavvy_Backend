@@ -11,6 +11,7 @@ import com.SalesSavvy.entities.Product;
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Integer>{
 	
+	// Custom query to fetch the products in a particular category  
 	@Query("SELECT p FROM Product p WHERE p.category.categoryId = :categoryId ")
 	List<Product> findByCategoryId(int categoryId);
 }

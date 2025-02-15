@@ -17,19 +17,24 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 
 @Service
-public class TokenGenerationService {
+public class TokenService {
 	
 	@Value("${jwt.secret}")
 	private String tokenGenrationKey;
 	
 	@Value("${jwt.expiration}")
 	private String tokenExpiration;
+	
+	private SecretKey KEY;
+
+	
 	private TokenRepository tokenRepo;
 	
-	
-	public TokenGenerationService(TokenRepository tokenRepo) {
+	public TokenService(TokenRepository tokenRepo, @Value("${string_for_key}") String stringForTokenKey ) {
 		super();
 		this.tokenRepo = tokenRepo;
+		this.KEY = Keys.hmacShaKeyFor(stringForTokenKey.getBytes());
+		
 	}
 
 	public String createToken(User user) {
@@ -80,6 +85,63 @@ public class TokenGenerationService {
 		
 	}
 	
+	public boolean validateToken( String token) {
+		System.out.println("Token is: "+token);
+		if(token !=null) {
+			try {
+				
+				// validating the token by parsing using key
+				Jwts.parserBuilder()
+						.setSigningKey(KEY)
+						.build()
+						.parseClaimsJws(token);
+
+				
+				// checking if the token exists in the DB and Not expired
+				Optional<JWTToken> optToken = tokenRepo.findByToken(token);
+				if(optToken.isPresent()) {
+					System.out.println("Expires at: " + optToken.get().getExpiresAt());
+					System.out.println("Current Time: " + LocalDateTime.now());
+					return optToken.get().getExpiresAt().isAfter(LocalDateTime.now());
+				}
+		
+				return false;
+			} 
+//			catch (io.jsonwebtoken.security.SignatureException e) {
+//				System.out.println("Invalid Token: "+ e);
+//				return false;
+//			} catch(ExpiredJwtException e) {
+//				System.out.println("Expired Token: "+ e);
+//				return false;
+//			}
+		catch (Exception e) {
+				System.out.println(e);
+				return false;
+			}
+		}
+		return false;
+	}
+	
+	
+	public String extractUsername(String token) {
+		try {
+		 return	Jwts.parserBuilder()
+			.setSigningKey(KEY)
+			.build()
+			.parseClaimsJws(token)
+			.getBody()
+			.getSubject();
+		
+		} catch(Exception e) {
+			System.out.println(e.getMessage());
+			return "";
+		}
+	}
+	
+	
+	public void deleteToken(int userId) {
+		tokenRepo.deleteByUserId(userId);
+	}
 	
 	
 }

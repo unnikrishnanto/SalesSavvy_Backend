@@ -31,12 +31,13 @@ public class CartItemService {
 		return cartItemRepo.findCountOfItems(username);
 	}
 	
-	public boolean getCartItemByUserAndProdId(String username, int productId) {
+	public boolean addCartItemByUserAndProdId(String username, int productId) {
 		Optional<CartItem> item = cartItemRepo.getItemByUserAndProductId(username, productId);
 		if(item.isPresent()) {
 			cartItemRepo.updateQuantity(username, productId);
 			return true;
 		} 
+		// if item is not present create a new CartItem 
 		Optional<User> user = userRepo.findByUsername(username);
 		Optional<Product> product = productRepo.findById(productId);
 		if(user.isPresent()) {
@@ -47,7 +48,7 @@ public class CartItemService {
 				throw new RuntimeException("Product Not found");
 			}
 		} else {
-			throw new RuntimeException(" Not found");
+			throw new RuntimeException("User Not found");
 		}
 	}
 	

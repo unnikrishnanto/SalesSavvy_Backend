@@ -20,12 +20,11 @@ public class UserService {
 	private EntityManager entityManager;
 
 	private UserRepository userRepo;
-
 	public UserService(UserRepository userRepo) {
 		super();
 		this.userRepo = userRepo;
 	}
-	
+
 	@Transactional
 	public User userRegistration(User user) {
 		
@@ -60,6 +59,5 @@ public class UserService {
 		}
 		return null;
 	}
-	
 	
 }

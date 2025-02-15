@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import com.SalesSavvy.entities.Role;
 import com.SalesSavvy.entities.User;
 import com.SalesSavvy.repositories.UserRepository;
-import com.SalesSavvy.services.AuthService;
+import com.SalesSavvy.services.TokenService;
 
 import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;
@@ -24,23 +24,25 @@ import jakarta.servlet.http.HttpServletResponse;
 
 @WebFilter(urlPatterns = {"/api/*", "/admin/*"})
 @Component
-@CrossOrigin(origins="http://localhost:5173", allowCredentials = "true")
+@CrossOrigin(origins="http://localhost:5173", allowCredentials = "true") // For CORS
 public class AuthenticationFilter implements Filter{
 	
-	private AuthService authSrevice;
 	private UserRepository userRepo;
+	private TokenService tokenService;
 	
+	// defining public paths that are allowed 
 	private String[] UNAUTHENTICATED_PATHS = {
 		"/api/login",
 		"/api/user/register"
 	};
+	
 	private String ALLOWED_ORIGIN= "http://localhost:5173";
 	
-	public AuthenticationFilter(AuthService authSrevice, UserRepository userRepo) {
+	public AuthenticationFilter(UserRepository userRepo, TokenService tokenService) {
 		super();
 		System.out.println("Filter Started");
-		this.authSrevice = authSrevice;
 		this.userRepo = userRepo;
+		this.tokenService = tokenService;
 	}
 
 	@Override
@@ -52,8 +54,6 @@ public class AuthenticationFilter implements Filter{
 		} catch (Exception e) {
 			System.out.println(e.getMessage());
 		}
-		
-		
 	}
 	
 	private void doFilterLogic(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
@@ -78,13 +78,13 @@ public class AuthenticationFilter implements Filter{
 		// ExtractToken from Cookie
 		String token = extractTokenFromCookie(httpRequest);
 		// validating token
-		if(token ==null || !authSrevice.validateToken(token)) {
+		if(token ==null || !tokenService.validateToken(token)) {
 			setErrorResponse(httpResponse, HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized: invalid or missing token");
 			return;
 		}
 		
 		// validating the user present in the token(subject)
-		String userInToken = authSrevice.extractUsername(token);
+		String userInToken = tokenService.extractUsername(token);
 		
 		Optional<User> userOpt = userRepo.findByUsername(userInToken);
 		if(userOpt.isEmpty()) {

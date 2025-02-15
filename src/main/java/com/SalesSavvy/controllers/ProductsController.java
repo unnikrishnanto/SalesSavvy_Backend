@@ -29,9 +29,10 @@ public class ProductsController {
 	@GetMapping("/products")
 	ResponseEntity<?> getProducts(@RequestParam(name = "category") String categoryName) {
 
-		if(categoryName != null && categoryName != "") {
+		if(categoryName != null && categoryName != "") { // validating category name
 			List<Product> prods = productService.getProdutsByCategory(categoryName);
 			List<ProductDTO> products = new ArrayList<>();
+			// Converting Product object to ProductDTO(product + image url) 
 			if(prods != null) {
 				for(Product prod : prods) {
 					ProductDTO product = new ProductDTO(prod);

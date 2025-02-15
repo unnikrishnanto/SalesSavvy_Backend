@@ -26,6 +26,7 @@ public class CartItemController {
 	@GetMapping("/count")
 	@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
 	ResponseEntity<?> count(@RequestAttribute String username){
+		// fetching cart item count with username
 		int count = cartService.getCartCount(username);
 		if(count >= 0) {
 			return ResponseEntity.ok(Map.of("Messsage","Success", "count", count));
@@ -35,12 +36,13 @@ public class CartItemController {
 	
 	@CrossOrigin(origins ="http://localhost:5173", allowCredentials = "true")
 	@PostMapping("/add")
-	ResponseEntity<?> getCartItem(@RequestBody Map<String, String> body){
+	ResponseEntity<?> addCartItem(@RequestBody Map<String, String> body){
 		try {
+			// extracting request body
 			String username = body.get("username");
 			int productId = Integer.parseInt(body.get("productId"));
 
-			if(cartService.getCartItemByUserAndProdId(username, productId)) {
+			if(cartService.addCartItemByUserAndProdId(username, productId)) {
 				return ResponseEntity.ok(Map.of("message", "Success"));
 			}
 			return ResponseEntity.ok(Map.of("message", "Falied"));

@@ -7,6 +7,7 @@ import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -14,22 +15,21 @@ import org.springframework.web.bind.annotation.RestController;
 import com.SalesSavvy.dtos.LoginDTO;
 import com.SalesSavvy.entities.User;
 import com.SalesSavvy.services.AuthService;
-import com.SalesSavvy.services.TokenGenerationService;
+import com.SalesSavvy.services.TokenService;
+
+import jakarta.servlet.http.HttpServletResponse;
 
 @RestController
 @RequestMapping("/api")
 public class AuthController {
 	private AuthService authService;
-	private TokenGenerationService tokenGenService;
+	private TokenService tokenGenService;
 	
-	
-	public AuthController(AuthService authService, TokenGenerationService tokenGenService) {
+	public AuthController(AuthService authService, TokenService tokenGenService) {
 		super();
 		this.authService = authService;
 		this.tokenGenService = tokenGenService;
 	}
-
-
 
 	@PostMapping("/login")
 	@CrossOrigin(origins="http://localhost:5173", allowCredentials = "true")
@@ -37,8 +37,7 @@ public class AuthController {
 		
 		User user = authService.authenticateUser(loginUser);
 		
-		
-		if(user == null) {
+		if(user == null) { // on failure
 			return ResponseEntity.status(401)
 							.body(Map.of("message", "Invalid Username Or Passsword"));
 		}
@@ -67,6 +66,32 @@ public class AuthController {
 				.headers(headers)
 				.body(Map.of("role", user.getRole().getValue(), "message","Login Successful"));
 		
+	}
+	
+	@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
+	@PostMapping("/logout")
+	ResponseEntity<?> logout(@RequestAttribute String username, HttpServletResponse response){
+		if(authService.logout(username)) { // the logout in service will delete the token in DB
+			// setting authtoken as null in cookie to clear the existing cookie from browser 
+			ResponseCookie cookie = ResponseCookie.from("authtoken", null)
+					.httpOnly(true)
+					.secure(false)
+					.path("/")
+					.sameSite("Lax")
+					.domain("localhost")
+					.maxAge(0)
+					.build();
+			
+			// adding cookie to header
+			HttpHeaders headers = new HttpHeaders();
+			headers.add(HttpHeaders.SET_COOKIE, cookie.toString());
+			
+			return ResponseEntity.ok()
+					.headers(headers)
+					.body(Map.of("message", "Logout successful"));
+			
+		}
+		return ResponseEntity.badRequest().body(Map.of("message", "Logout failed"));
 	}
 	
 }
