@@ -1,5 +1,6 @@
 package com.SalesSavvy.repositories;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -22,9 +23,28 @@ public interface CartItemRepository extends JpaRepository<CartItem, Integer>{
 	@Query("SELECT c FROM CartItem c WHERE c.product.productId = :productId and  c.user.username = :username")
 	Optional<CartItem> getItemByUserAndProductId(String username, int productId );
 	
-	// Custom query to update cart quantity for a cart item based on productId and username
+	// Custom query to update cart quantity for a cart item based on productId and username and new quantity value 
 	@Transactional
 	@Modifying
-	@Query("UPDATE CartItem c SET c.quantity= c.quantity + 1 WHERE c.product.productId = :productId and  c.user.username = :username")
-	int updateQuantity(String username, int productId);
+	@Query("UPDATE CartItem c SET c.quantity= :quantity WHERE c.product.productId = :productId and  c.user.username = :username")
+	int updateQuantity(String username, int productId, int quantity);
+	
+	//Custom Query to fetch all cart items for a user based on id
+	@Query("SELECT c FROM CartItem c WHERE c.user.userId =:userId")
+	List<CartItem> getCartItemsByUserId(int userId);
+		
+	
+	// Custom Query to delete cart item with username and productId
+	@Transactional
+	@Modifying
+	@Query("DELETE FROM CartItem c WHERE c.user.username = :username AND c.product.productId = :productId")
+	int deleteItemByUsernameAndProductId(String username, int productId);
+	
+	// Custom Query to delete all cart item for a user
+	@Transactional
+	@Modifying
+	@Query("DELETE FROM CartItem c WHERE c.user.userId = :userId")
+	int deleteAllByUserId(int userId);
+			
+	
 }

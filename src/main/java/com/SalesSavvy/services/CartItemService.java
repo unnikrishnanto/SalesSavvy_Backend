@@ -1,5 +1,7 @@
 package com.SalesSavvy.services;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
@@ -34,7 +36,7 @@ public class CartItemService {
 	public boolean addCartItemByUserAndProdId(String username, int productId) {
 		Optional<CartItem> item = cartItemRepo.getItemByUserAndProductId(username, productId);
 		if(item.isPresent()) {
-			cartItemRepo.updateQuantity(username, productId);
+			cartItemRepo.updateQuantity(username, productId, item.get().getQuantity()+1);
 			return true;
 		} 
 		// if item is not present create a new CartItem 
@@ -52,4 +54,27 @@ public class CartItemService {
 		}
 	}
 	
+	
+	public List<CartItem> getCartItemsByUsername(String username){
+		
+		return userRepo.findByUsername(username)
+			.map(user -> cartItemRepo.getCartItemsByUserId(user.getUserId()))
+			.orElse(Collections.emptyList());
+	}
+	
+	public boolean updateQuantity(String username, int productId, int quantity) {
+		if(cartItemRepo.updateQuantity(username, productId, quantity) > 0)
+			return true;
+		else 
+			return false;
+	}
+	
+	public int removeCartItem(String username, int productId) {
+		return cartItemRepo.deleteItemByUsernameAndProductId(username, productId);
+	}
+	
+	public int emptyCart(int userId) {
+		return cartItemRepo.deleteAllByUserId(userId);
+	}
+		
 }
