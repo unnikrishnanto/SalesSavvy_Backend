@@ -60,4 +60,30 @@ public class UserService {
 		return null;
 	}
 	
+	@Transactional
+	public User updateDetails(User user, String newUsername, String newEmail) throws Exception {
+		userRepo.updateUserDetails(user.getUserId(), newUsername, newEmail);
+		
+		// Flush and clear persistence context
+	    entityManager.flush();
+	    entityManager.clear();
+		
+	    Optional<User> newUser = userRepo.findById(user.getUserId());
+		if(newUser.isPresent()) {
+			return newUser.get();
+		}
+		throw new RuntimeException("Updation Failed.");
+	}	
+	
+	@Transactional
+    public boolean changePassword(User user, String newPassword) {
+    	// Encrypting new password
+    	BCryptPasswordEncoder passEncoder = new BCryptPasswordEncoder();
+    	String newEncodedPassword = passEncoder.encode(newPassword);
+    	userRepo.changePassword(user.getUserId(), newEncodedPassword);
+        return true;
+    }
 }
+
+
+
