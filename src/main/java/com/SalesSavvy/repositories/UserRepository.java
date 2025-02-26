@@ -1,5 +1,6 @@
 package com.SalesSavvy.repositories;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -26,4 +27,8 @@ public interface UserRepository extends JpaRepository<User, Integer>{
     @Transactional
     @Query("UPDATE User u SET u.password = :newPassword WHERE u.id = :userId")
     int changePassword(int userId,String newPassword);
+	
+	// Custom query to fetch all the Customers from the users table
+	@Query("SELECT u FROM User u WHERE u.role = 'CUSTOMER'")
+	List<User> getAllUsers();
 }
