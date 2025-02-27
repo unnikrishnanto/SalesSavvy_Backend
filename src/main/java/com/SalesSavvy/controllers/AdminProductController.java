@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.SalesSavvy.Exceptions.InvalidCategoryException;
@@ -47,6 +48,21 @@ public class AdminProductController {
 	}
 	
 	
+	@GetMapping("/details")
+	@CrossOrigin(origins="http://localhost:5173", allowCredentials = "true")
+	public ResponseEntity<?> getDetails(@RequestParam int productId){
+		try {
+			return ResponseEntity.ok(Map.of("message", "Successfull", "product", adminProdService.getProductDetails(productId)));
+			
+		} catch(IllegalArgumentException | ProductNotFoundException e) {
+			e.printStackTrace();
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", e.getMessage()));	
+		} catch(Exception e) {
+			e.printStackTrace();
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "Something went wrong"));	
+		}
+	}
+	
 	@PostMapping("/add")
 	@CrossOrigin(origins="http://localhost:5173", allowCredentials = "true")
 	public ResponseEntity<?> addProduct(@RequestBody Map<String, Object> reqBody){
@@ -64,6 +80,30 @@ public class AdminProductController {
 			
 			ProductDTO productDto = new ProductDTO(product); 
 			return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("message", "Product Added Successfully", "product", productDto));
+			
+		} catch(IllegalArgumentException |  InvalidCategoryException e ) {
+			e.printStackTrace();
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", e.getMessage()));	
+		} catch(Exception e) {
+			e.printStackTrace();
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "Something went wrong"));	
+		}
+	}
+	
+	@PostMapping("/update")
+	@CrossOrigin(origins="http://localhost:5173", allowCredentials = "true")
+	public ResponseEntity<?> updateProduct(@RequestBody Map<String, Object> reqBody){
+		
+		try {
+			Integer productId = (Integer) reqBody.get("productId");
+			String name = (String) reqBody.get("name");
+			String description = (String) reqBody.get("description");
+			Double price = Double.valueOf(String.valueOf(reqBody.get("price")));
+			Integer catrgory_id = (Integer) reqBody.get("categoryId");
+			Integer stock = (Integer) reqBody.get("stock");
+			String imgUrl = (String) reqBody.get("imageUrl");
+			ProductDTO product = adminProdService.updateProduct(productId, name, description, price, stock, catrgory_id, imgUrl);
+			return ResponseEntity.status(HttpStatus.OK).body(Map.of("message", "Product Added Successfully", "product", product));
 			
 		} catch(IllegalArgumentException |  InvalidCategoryException e ) {
 			e.printStackTrace();

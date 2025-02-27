@@ -16,6 +16,8 @@ public class ProductDTO {
 
 	int stock;
 	
+	int categoryId;
+	
 	String category;
 	
 	String imageUrl;
@@ -36,13 +38,14 @@ public class ProductDTO {
 	}
 
 	public ProductDTO(int productId, String name, String description, BigDecimal price, int stock, String category,
-			String imageUrl) {
+			String imageUrl,int categoryId) {
 		super();
 		this.productId = productId;
 		this.name = name;
 		this.description = description;
 		this.price = price;
 		this.stock = stock;
+		this.categoryId = categoryId;
 		this.category = category;
 		this.imageUrl = imageUrl;
 	}
@@ -54,7 +57,8 @@ public class ProductDTO {
 		description = product.getDescription();
 		price = product.getPrice();
 		stock = product.getStock();
-		category = product.getCategory().getCategory_name();
+		categoryId = product.getCategory().getCategoryId();
+		category = product.getCategory().getCategoryName();
 		imageUrl = null;
 	}
 	
@@ -113,10 +117,13 @@ public class ProductDTO {
 	public void setImageUrl(String imageUrl) {
 		this.imageUrl = imageUrl;
 	}
-	
-	
-	
-	
-	
+
+	public int getCategoryId() {
+		return categoryId;
+	}
+
+	public void setCategoryId(int categoryId) {
+		this.categoryId = categoryId;
+	}
 	
 }

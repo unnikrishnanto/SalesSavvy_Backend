@@ -41,13 +41,18 @@ public class Category {
 		this.categoryName = categoryName;
 		this.products = products;
 	}
+	
 
-	public String getCategory_name() {
+	public String getCategoryName() {
 		return categoryName;
 	}
 
-	public void setCategory_name(String categoryName) {
+	public void setCategoryName(String categoryName) {
 		this.categoryName = categoryName;
+	}
+
+	public void setCategoryId(int categoryId) {
+		this.categoryId = categoryId;
 	}
 
 	public List<Product> getProducts() {

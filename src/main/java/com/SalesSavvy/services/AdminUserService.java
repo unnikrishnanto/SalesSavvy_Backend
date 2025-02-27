@@ -2,7 +2,6 @@ package com.SalesSavvy.services;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 
 import org.springframework.stereotype.Service;
@@ -49,12 +48,8 @@ public class AdminUserService {
 	
 	@Transactional
 	public void modifyUser(int userId, String username, String email, String role) {
-		Optional<User> userOp = userReop.findById(userId);
-		
-		if(userOp.isEmpty()) 
-			throw new UserNotFoundException("User Not Found");
-		
-		User existingUser = userOp.get();
+		User existingUser  = userReop.findById(userId)
+					.orElseThrow(()-> new UserNotFoundException("User Not Found"));
 		
 		if(username != null && !username.isBlank()) 
 			existingUser.setUsername(username);
@@ -84,11 +79,9 @@ public class AdminUserService {
 	
 	@Transactional
 	public void deleteUser(int userId) {
-		Optional<User> userOp = userReop.findById(userId);
-		
-		if(userOp.isEmpty()) 
-			throw new UserNotFoundException("User Not Found");
-		
+		User user = userReop.findById(userId)
+				.orElseThrow(()-> new UserNotFoundException("User Not Found"));
+	
 		// Delete Token For the user
 		tokenRepo.deleteByUserId(userId);
 			
@@ -99,16 +92,14 @@ public class AdminUserService {
 		orderRepo.setUserAsDeactivated(userId);
 		
 		// Delete the user
-		userReop.delete(userOp.get());
+		userReop.delete(user);
 		
 	}
 	
 	public UserDTO getUserDetails(int userId) {
-		Optional<User> userOp = userReop.findById(userId);
-		
-		if(userOp.isEmpty()) 
-			throw new UserNotFoundException("User Not Found");
-		return new UserDTO(userOp.get());
+		User user = userReop.findById(userId)
+				.orElseThrow(()-> new UserNotFoundException("User Not Found"));
+		return new UserDTO(user);
 	}
 	
 }

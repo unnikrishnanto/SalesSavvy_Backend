@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import com.SalesSavvy.Exceptions.InvalidCategoryException;
 import com.SalesSavvy.Exceptions.ProductNotFoundException;
+import com.SalesSavvy.dtos.ProductDTO;
 import com.SalesSavvy.entities.Category;
 import com.SalesSavvy.entities.Product;
 import com.SalesSavvy.entities.ProductImage;
@@ -27,7 +28,7 @@ public class AdminProductService {
 	private final CategorieRepository categoryRepo;
 	private final OrderItemRepository orderItemRepo;
 	private final CartItemRepository cartItemRepo;
-
+	
 	public AdminProductService(ProductRepository productRepo, ProductImageRepository productImgRepo,
 			CategorieRepository categoryRepo, OrderItemRepository orderItemRepo, CartItemRepository cartItemRepo) {
 		super();
@@ -41,14 +42,29 @@ public class AdminProductService {
 	public List<Product> getAllProducts(){
 		return productRepo.findAll();
 	}
+	
+	public ProductDTO getProductDetails(int productId) {
+		
+		// Check if product is present or not
+		ProductDTO productDTO = productRepo.findById(productId)
+				.map(ProductDTO::new) // maps Optional<Product> to Optional<ProductDTO> 
+									  // if Value is absent returns an empty Optional
+				.orElseThrow(()-> new ProductNotFoundException("Invalid Product ID")); //returns value if it is present
+									  // if value is absent throws exception
+		
+		productImgRepo.getImageByProductId(productId) 
+						.map(ProductImage::getImageURL) // returns Optional<String>
+									// if value is not present returns empty optional 
+						.ifPresent(productDTO::setImageUrl);; // if the optional after mapping
+							// is non empty sets its value to the productDTO object				
+		return productDTO;
+	}
 
+	@Transactional
 	public Product addProduct(String name, String description, double price, int stock, int catogory_id, String imgUrl) {
 		// Validate Category using Id
-		Optional<Category> category = categoryRepo.findById(catogory_id);
-		
-		if(category.isEmpty()) {
-			throw new InvalidCategoryException("Invalid Category ID");
-		}
+		Category category = categoryRepo.findById(catogory_id)
+					.orElseThrow(() -> new InvalidCategoryException("Invalid Category ID"));
 		
 		// Create a Product Object with the details and save it
 				
@@ -57,7 +73,7 @@ public class AdminProductService {
 		product.setDescription(description);
 		product.setPrice(BigDecimal.valueOf(price));
 		product.setStock(stock);
-		product.setCategory(category.get());
+		product.setCategory(category);
 		product.setCreatedAt(LocalDateTime.now());
 		product.setUpdatedAt(LocalDateTime.now());
 		
@@ -76,15 +92,52 @@ public class AdminProductService {
 		
 	}
 	
+	public ProductDTO updateProduct(int productId, String name, String description, double price, int stock, int catogory_id, String imgUrl) {
+		// Validate Category using Id
+		Category category = categoryRepo.findById(catogory_id)
+										.orElseThrow(()-> 
+										 new InvalidCategoryException("Invalid Category ID"));
+	
+		// Check if product is present or not
+		Product product = productRepo.findById(productId)
+									   .orElseThrow(()->new ProductNotFoundException("Invalid Product ID"));	
+		
+		
+		product.setName(name);
+		product.setDescription(description);
+		product.setPrice(BigDecimal.valueOf(price));
+		product.setStock(stock);
+		product.setCategory(category);
+		product.setCreatedAt(LocalDateTime.now());
+		product.setUpdatedAt(LocalDateTime.now());
+		
+		Product savedProduct = productRepo.save(product);
+		
+		if(imgUrl != null && !imgUrl.isBlank()) {
+			Optional<ProductImage> productImgOp = productImgRepo.getImageByProductId(productId);
+			
+			if(productImgOp.isEmpty()) {
+				ProductImage prodImage = new ProductImage();
+				prodImage.setProductId(savedProduct);
+				prodImage.setImageURL(imgUrl);
+				productImgRepo.save(prodImage);
+			} else {
+				ProductImage prodImage =  productImgOp.get();
+				prodImage.setImageURL(imgUrl);
+				productImgRepo.save(prodImage);
+			}
+		} else {
+			throw new IllegalArgumentException("Product Image URL Cannot be Empty");
+		}
+		return getProductDetails(productId);	
+	}
+	
 	@Transactional
 	public void deleteProduct(int productId) {
 	
 		// Check if product is present or not
-		Optional<Product> product = productRepo.findById(productId);
-		if(product.isEmpty()) {
-			throw new ProductNotFoundException("Invalid Product ID");	
-		}
-		
+		Product product = productRepo.findById(productId)
+				.orElseThrow(()-> new ProductNotFoundException("Invalid Product ID"));	
 		
 		// Set Product as not available in case it exists in Orders
 		orderItemRepo.setOrderItemAsUnavailable(productId);
@@ -96,7 +149,7 @@ public class AdminProductService {
 		cartItemRepo.deleteAllByProductId(productId);
 		
 		// Delete the Product
-		productRepo.delete(product.get());
+		productRepo.delete(product);
 	}
 	
 	
