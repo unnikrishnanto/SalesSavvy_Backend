@@ -37,10 +37,8 @@ public class ProductsController {
 				for(Product prod : prods) {
 					ProductDTO product = new ProductDTO(prod);
 					String Url =  productService.getProductUrl(prod.getProductId());
-					if(Url != null) {
-						product.setImageUrl(Url);
-						products.add(product);
-					}
+					product.setImageUrl(Url);
+					products.add(product);
 				}
 				System.out.println("Sending Products");
 				return ResponseEntity.ok(Map.of("Message", "Success", "products", products));

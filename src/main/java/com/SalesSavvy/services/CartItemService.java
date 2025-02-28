@@ -2,10 +2,12 @@ package com.SalesSavvy.services;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
+import com.SalesSavvy.Exceptions.InsufficientStockException;
+import com.SalesSavvy.Exceptions.ProductNotFoundException;
+import com.SalesSavvy.Exceptions.UserNotFoundException;
 import com.SalesSavvy.entities.CartItem;
 import com.SalesSavvy.entities.Product;
 import com.SalesSavvy.entities.User;
@@ -34,24 +36,32 @@ public class CartItemService {
 	}
 	
 	public boolean addCartItemByUserAndProdId(String username, int productId) {
-		Optional<CartItem> item = cartItemRepo.getItemByUserAndProductId(username, productId);
-		if(item.isPresent()) {
-			cartItemRepo.updateQuantity(username, productId, item.get().getQuantity()+1);
-			return true;
-		} 
-		// if item is not present create a new CartItem 
-		Optional<User> user = userRepo.findByUsername(username);
-		Optional<Product> product = productRepo.findById(productId);
-		if(user.isPresent()) {
-			if(product.isPresent()) {
-				System.out.println(cartItemRepo.save(new CartItem(user.get(), product.get(), 1)));
-				return true;
-			} else {
-				throw new RuntimeException("Product Not found");
-			}
-		} else {
-			throw new RuntimeException("User Not found");
+		
+		Product product = productRepo.findById(productId)
+							.orElseThrow(()-> new ProductNotFoundException("Product Not Found"));
+		
+		User user = userRepo.findByUsername(username)
+				.orElseThrow(()-> new UserNotFoundException("User Not Found"));
+		
+		if(product.getStock() <=0 ) {
+			throw new InsufficientStockException("Insufficient stock available to complete the update");
 		}
+		
+		CartItem item = cartItemRepo.getItemByUserAndProductId(username, productId).orElse(null);
+		
+		if(item != null) {
+			int updatedQuantity =  item.getQuantity()+1;
+			if(updatedQuantity > product.getStock()) {
+				throw new InsufficientStockException("Insufficient stock available to complete the update. Please adjust the quantity.");
+			}
+			cartItemRepo.updateQuantity(username, productId, updatedQuantity);
+		} else {
+		// if item is not present create a new CartItem 
+	
+		cartItemRepo.save(new CartItem(user, product, 1));
+		}
+		return true;
+		
 	}
 	
 	
@@ -63,6 +73,17 @@ public class CartItemService {
 	}
 	
 	public boolean updateQuantity(String username, int productId, int quantity) {
+		Product product = productRepo.findById(productId)
+				.orElseThrow(()-> new ProductNotFoundException("Product Not Found"));
+
+		if(product.getStock() <=0 ) {
+			throw new InsufficientStockException("Insufficient stock available to complete the update");
+		}
+		
+		if(quantity > product.getStock()) {
+			throw new InsufficientStockException("Insufficient stock available to complete the update");
+		}
+		
 		if(cartItemRepo.updateQuantity(username, productId, quantity) > 0)
 			return true;
 		else 

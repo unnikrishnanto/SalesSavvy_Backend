@@ -5,6 +5,7 @@ import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.SalesSavvy.Exceptions.InsufficientStockException;
 import com.SalesSavvy.dtos.CartItemDTO;
 import com.SalesSavvy.dtos.UserDTO;
 import com.SalesSavvy.entities.CartItem;
@@ -62,7 +64,10 @@ public class CartItemController {
 				return ResponseEntity.ok(Map.of("message", "Success"));
 			}
 			return ResponseEntity.ok(Map.of("message", "Falied"));
-		} catch(Exception e) {
+		} catch(InsufficientStockException e) {
+			return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("message", e.getMessage()));
+		}
+		catch(Exception e) {
 			return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
 		}
 		
@@ -80,10 +85,8 @@ public class CartItemController {
 				cartItemDTO.calculateAndSetTotal();
 				if(cartItemDTO != null) {
 					String imgUrl = productService.getProductUrl(cartItemDTO.getProductId());
-					if(imgUrl != null) {
-						cartItemDTO.setImgUrl(imgUrl);
-						products.add(cartItemDTO);
-					}
+					cartItemDTO.setImgUrl(imgUrl);
+					products.add(cartItemDTO);
 				}
 			}
 			// Fetching user details
@@ -99,7 +102,7 @@ public class CartItemController {
 	
 	@CrossOrigin(origins ="http://localhost:5173", allowCredentials = "true")
 	@PutMapping("/update")
-	ResponseEntity<?> increaseCartItemQuatity(@RequestBody Map<String,String> body){
+	ResponseEntity<?> updateCartItemQuatity(@RequestBody Map<String,String> body){
 		try {
 			String username = body.get("username");
 			String productIdStr = body.get("productId");
