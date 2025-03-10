@@ -49,8 +49,6 @@ public class UserController {
 	ResponseEntity<?> registerUser(@RequestBody User user) {
 		try {
 			User registeredUser =  userService.userRegistration(user);
-			System.out.println("saved:" + registeredUser.getCreatedAt());
-			System.out.println("saved:" + registeredUser.getUpdatedAt());
 			return ResponseEntity.ok(Map.of("message", "User Resgistration Successful", "user", registeredUser));
 		}catch(Exception e) {
 			return ResponseEntity.badRequest().body(Map.of("message" ,e.getMessage()));
@@ -60,9 +58,7 @@ public class UserController {
 	
 	@GetMapping("/details")
 	@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true" )
-	ResponseEntity<?> getUserDetails(@RequestAttribute String username){
-		System.out.println(username + " is Accessing");
-		
+	ResponseEntity<?> getUserDetails(@RequestAttribute String username){		
 		// converting user Object to UserDTO 
 		UserDTO user = userService.getDetails(username);
 		if(user != null)
@@ -90,14 +86,12 @@ public class UserController {
 			
 			// For the new user name new token  must be generated using new username
 			if(user.get().getUsername().equals(newUser.getUsername())) {
-				System.out.println("Same Username");
 				return ResponseEntity.ok(Map.of("message", "success"));
 			}
 			
 			// Delete old token
 			tokenService.deleteToken(newUser.getUserId());
 			
-			System.out.println("Genreating new token for new name...");
 			
 			// Creates and saves the token
 			String token =  tokenService.createToken(newUser);

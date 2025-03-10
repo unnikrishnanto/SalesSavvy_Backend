@@ -25,9 +25,6 @@ public class AuthService {
 		
 	    Optional<User> userOp = userRepo.findByUsername(userCred.getUsername());
 	    
-	    System.out.println(userCred.getUsername());
-	    System.out.println(userCred.getPassword());
-	    System.out.println(userOp);
 	    
 	    if(userOp.isPresent()) {
 	    	User user = userOp.get();

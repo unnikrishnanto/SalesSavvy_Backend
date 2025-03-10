@@ -41,8 +41,6 @@ public class AuthController {
 			return ResponseEntity.status(401)
 							.body(Map.of("message", "Invalid Username Or Passsword"));
 		}
-		System.out.println("Genreating token for cookie...");
-		
 		// Creates and saves the token
 		String token =  tokenGenService.createToken(user);
 		

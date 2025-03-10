@@ -95,7 +95,6 @@ public class CartItemController {
 			return ResponseEntity.ok(Map.of("message", "success","user", user, "products", products));
 			
 		} catch (Exception e) {
-			System.out.println(e);
 			return ResponseEntity.internalServerError().body(Map.of("message",e.getMessage()));
 		}
 	}
@@ -130,7 +129,6 @@ public class CartItemController {
 			} 
 			return ResponseEntity.internalServerError().body(Map.of("message", "Failed"));
 		} catch (Exception e) {
-			System.out.println(e);
 			return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
 		}
 		
@@ -143,7 +141,6 @@ public class CartItemController {
 		try {
 			String username = body.get("username");
 			String productId = body.get("productId");
-			System.out.println(productId);
 			int deletedRows = cartService.removeCartItem(username, Integer.parseInt(productId));
 			
 			if(deletedRows > 0) 
@@ -151,7 +148,6 @@ public class CartItemController {
 			else
 				return ResponseEntity.internalServerError().body(Map.of("message", "No Record Deleted"));			
 		} catch (Exception e) {
-			System.out.println(e);
 			return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
 		}
 		
@@ -170,7 +166,6 @@ public class CartItemController {
 			else
 				return ResponseEntity.internalServerError().body(Map.of("message", "No Record Deleted"));			
 		} catch (Exception e) {
-			System.out.println(e);
 			return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
 		}
 		

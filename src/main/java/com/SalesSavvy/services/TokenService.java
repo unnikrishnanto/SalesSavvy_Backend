@@ -42,16 +42,13 @@ public class TokenService {
 		Optional<JWTToken> oldToken = tokenRepo.findByUserId(user.getUserId());
 		
 		if(oldToken.isPresent() && LocalDateTime.now().isBefore(oldToken.get().getExpiresAt())){
-			System.out.println("Sending back old token");
 			return oldToken.get().getToken();
 		}else {
 			
 			if(oldToken.isPresent()) {
 				tokenRepo.deleteByUserId(oldToken.get().getUser().getUserId());
 			}
-			System.out.println("deleting old token");
-			
-			System.out.println("creating new token");
+	
 			//create New Token
 			String newToken = createNewTOken(user); 
 			
@@ -86,7 +83,6 @@ public class TokenService {
 	}
 	
 	public boolean validateToken( String token) {
-		System.out.println("Token is: "+token);
 		if(token !=null) {
 			try {
 				
@@ -100,22 +96,18 @@ public class TokenService {
 				// checking if the token exists in the DB and Not expired
 				Optional<JWTToken> optToken = tokenRepo.findByToken(token);
 				if(optToken.isPresent()) {
-					System.out.println("Expires at: " + optToken.get().getExpiresAt());
-					System.out.println("Current Time: " + LocalDateTime.now());
 					return optToken.get().getExpiresAt().isAfter(LocalDateTime.now());
 				}
 		
 				return false;
 			} 
 //			catch (io.jsonwebtoken.security.SignatureException e) {
-//				System.out.println("Invalid Token: "+ e);
 //				return false;
 //			} catch(ExpiredJwtException e) {
-//				System.out.println("Expired Token: "+ e);
 //				return false;
 //			}
 		catch (Exception e) {
-				System.out.println(e);
+			    e.printStackTrace();
 				return false;
 			}
 		}
@@ -133,7 +125,6 @@ public class TokenService {
 			.getSubject();
 		
 		} catch(Exception e) {
-			System.out.println(e.getMessage());
 			return "";
 		}
 	}

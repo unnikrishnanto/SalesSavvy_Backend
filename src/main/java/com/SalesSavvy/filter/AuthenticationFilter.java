@@ -40,7 +40,6 @@ public class AuthenticationFilter implements Filter{
 	
 	public AuthenticationFilter(UserRepository userRepo, TokenService tokenService) {
 		super();
-		System.out.println("Filter Started");
 		this.userRepo = userRepo;
 		this.tokenService = tokenService;
 	}
@@ -49,10 +48,9 @@ public class AuthenticationFilter implements Filter{
 	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
 			throws IOException, ServletException {
 		try {
-			System.out.println("Request Received");
 			doFilterLogic(request, response, chain);
 		} catch (Exception e) {
-			System.out.println(e.getMessage());
+			e.printStackTrace();
 		}
 	}
 	
@@ -132,7 +130,7 @@ public class AuthenticationFilter implements Filter{
 		try {
 			response.getWriter().write(message);
 		} catch (IOException e) {
-			System.out.println(e.getMessage());
+			e.printStackTrace();
 		}
 	}
 	

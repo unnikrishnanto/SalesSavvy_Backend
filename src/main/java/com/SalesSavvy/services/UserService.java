@@ -47,8 +47,6 @@ public class UserService {
 		User savedUser =userRepo.save(user);
 		entityManager.refresh(savedUser);
 		
-		System.out.println("saved:" + savedUser.getCreatedAt());
-		System.out.println("saved:" + savedUser.getUpdatedAt());
 		return savedUser;
 	}
 	

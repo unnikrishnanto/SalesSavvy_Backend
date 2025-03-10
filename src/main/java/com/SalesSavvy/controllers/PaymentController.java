@@ -54,7 +54,6 @@ public class PaymentController {
 	//		List<CartItem> cartItems = cartItemsRaw.stream().map(item->{
 	//			return new CartItem();
 	//		}).collect(Collectors.toList());
-			System.out.println("Amount is: " + totalAmount);
 			String orderId = paymentService.createOrder(user.get().getUserId(), totalAmount);
 			return ResponseEntity.ok(Map.of("message", "success", "orderId", orderId));
 		}

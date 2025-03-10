@@ -40,7 +40,6 @@ public class ProductsController {
 					product.setImageUrl(Url);
 					products.add(product);
 				}
-				System.out.println("Sending Products");
 				return ResponseEntity.ok(Map.of("Message", "Success", "products", products));
 			}
 		}
